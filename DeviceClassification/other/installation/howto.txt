@@ -1,0 +1,14 @@
+1) Install Python 2.* distribution (e.g. to C:\Python27\) - do not use Python 3.*
+   Make sure to include the Python binary in your PATH if you want to use the command line    
+ 
+2) Install pyserial libary (present in this directory)
+   Unpack archive, enter newly created directory and execute the following command:
+   python setup.py install
+
+3) Adapt path settings in plugwisev4.py (3 TODOs marked)
+3.1) Create the file stated in TODO 2 (e.g. C:\Python27\Plugwise\devices.dat )
+3.2) Enter one Plugwise MAC address per line (identifiers of 16 characters length)
+     --> See example file in this folder
+
+4) Run polling tool by executing the following command
+   python plugwisev4.py

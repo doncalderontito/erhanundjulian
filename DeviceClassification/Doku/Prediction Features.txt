@@ -1,0 +1,10 @@
+Mögliche Prediction Features:
+
+* hourOfCollection  (ist schon da)
+* dayOfCollection   (ist schon da)
+* power average over 8 sec. (ist schon da)
+* power cons. (ist schon da)
+* geglatteter Durschschnitt (wird implementiert)
+* maxAverage bisher (wird implementiert - einfach !)
+* minAverage bisher ( "  "  " " ")
+* stündliches Integral 
