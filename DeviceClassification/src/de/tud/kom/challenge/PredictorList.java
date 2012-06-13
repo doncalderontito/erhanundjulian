@@ -9,11 +9,14 @@ import de.tud.kom.challenge.prediction.processors.SimpleMaxWindowProcessor;
 import de.tud.kom.challenge.prediction.processors.SimplePipeThroughProcessor;
 import de.tud.kom.challenge.prediction.processors.SimpleTimeProcessor;
 import de.tud.kom.challenge.prediction.processors.SimpleWindowPredictor;
+import de.tud.kom.challenge.processors.SmoothValueProcessor;
 
 public class PredictorList {
 	
 	public static Vector<PredictionProcessor> getPredictors() {
 		Vector<PredictionProcessor> processors = new Vector<PredictionProcessor>();
+		
+		processors.add(new SmoothValueProcessor());			//smoothes the noise
 		
 		processors.add(new HistoricYesterdayPredictor());
 		processors.add(new AbsolutePowerJumpProcessor());
