@@ -24,10 +24,10 @@ public class EdgeTimeProcessor implements PredictionProcessor {
 
 	@Override
 	public Vector<PredictionFeature> addValueToModel(DataEntry entry) {
-		Calendar calendar = Calendar.getInstance();
+		//Calendar calendar = Calendar.getInstance();
 		Vector<PredictionFeature> features = new Vector<PredictionFeature>();
-		calendar.setTimeInMillis(entry.getTime() * 1000);
-		if(oldDay != calendar.get(Calendar.DAY_OF_YEAR) && oldDay != -1) {
+		//calendar.setTimeInMillis(entry.getTime() * 1000);
+		if(oldDay != (entry.getTime() / 86400) && oldDay != -1) {
 			features.add(new PredictionFeature("EdgePerTimeDetection", "" + edgeCounter));
 			edgeCounter = 0;
 		}
@@ -38,7 +38,7 @@ public class EdgeTimeProcessor implements PredictionProcessor {
 			}
 		}
 		oldValue = entry.getValue();
-		oldDay = calendar.get(Calendar.DAY_OF_YEAR);
+		oldDay = (entry.getTime() / 86400);
 		return features;
 	}
 
