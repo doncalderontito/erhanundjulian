@@ -22,10 +22,10 @@ public class PredictorList {
 		processors.add(new EdgeProcessor());				//true if newVal != oldVal +- 5%
 		processors.add(new EdgeTimeProcessor());			//counts edges per Day noise
 		
-		processors.add(new HistoricYesterdayPredictor());
-		processors.add(new AbsolutePowerJumpProcessor());
-		processors.add(new SimpleWindowPredictor());
-		processors.add(new SimpleMaxWindowProcessor());
+		//processors.add(new HistoricYesterdayPredictor());
+		//processors.add(new AbsolutePowerJumpProcessor());
+		//processors.add(new SimpleWindowPredictor());
+		//processors.add(new SimpleMaxWindowProcessor());
 		processors.add(new SimpleTimeProcessor());
 		processors.add(new SimplePipeThroughProcessor());
 		
