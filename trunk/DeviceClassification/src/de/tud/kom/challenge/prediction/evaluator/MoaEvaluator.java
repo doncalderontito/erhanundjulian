@@ -3,6 +3,8 @@ package de.tud.kom.challenge.prediction.evaluator;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Vector;
 
 import moa.cluster.Clustering;
@@ -22,125 +24,134 @@ import de.tud.kom.challenge.prediction.PredictionFeature;
 public class MoaEvaluator implements Evaluator {
 
 	int timestamp = 0;
-	AbstractClusterer clusterer = new CobWeb();
 	private final static Logger log = Logger.getLogger(MoaEvaluator.class
 			.getSimpleName());
 	Instances dataset = null;
-	Instances newInstances = null;
 	Clustering clustering = null;
 	int oldNumberOfClusters = 0;
+	
+	//filters for recognizing same data processings
 	Vector<Instance> instanceFilter = new Vector<Instance>();
 	int filtersize = 10;
 
-	static int clusterOffset = 1;
-
+	//values to compare for manually checking of min and max power consumptions
 	private double maxSoFar;
 	private double minSoFar;
 
+	// a set of clusterers
+	private AbstractClusterer[] clusterers = new AbstractClusterer[] { new CobWeb()};
+	private int[] clustererSizes = new int[clusterers.length];
+	private int clustererCounter = 0;
+	
+	//a set of datasets
+	private Vector<Instances> datasets = new Vector<Instances>();
+	private int datasetCounter = 0;
+	
+
 	@Override
-	public boolean evaluate(Vector<PredictionFeature> oldResults, boolean training) {
-		Vector<PredictionFeature> results;
+	public boolean evaluate(Vector<PredictionFeature> results, boolean training) {
+
 		if (dataset == null) {
 			log.error("dataset not initialized - trainFromArff should be called before");
 			return false;
 		}
 
-		results = new Vector<PredictionFeature>();
-		results.add(oldResults.firstElement());
+		Vector<PredictionFeature> resultsPart1 = new Vector<PredictionFeature>();
+		resultsPart1.add(results.get(0));
+		Instance instance1 = this.predictionFeatureToInstance(resultsPart1);
+		boolean event1 = evaluate(instance1, false);
 		
-		Instance instance = new DenseInstance(newInstances.numAttributes());
-		instance.setDataset(newInstances);
-		int pos = 0;
-
-		for (PredictionFeature feature : results) {
-			if (feature.getResult() == null) {
-				pos++;
-				continue;
-			}
-
-			if (dataset.attribute(pos).isNumeric()) {
-				instance.setValue(pos,
-						(double) Double.valueOf(feature.getResult()));
-
-			} else {
-				instance.setValue(pos, feature.getResult());
-			}
-
-			pos++;
-		}
-
-		return evaluate(instance);
+		Vector<PredictionFeature> resultsPart2 = new Vector<PredictionFeature>();
+		resultsPart2.add(results.get(3));
+		resultsPart2.add(results.get(4));
+		Instance instance2 = this.predictionFeatureToInstance(resultsPart2);
+		boolean event2 = evaluate(instance2, true);
+		
+		return event1 || event2;
 	}
 
-	private boolean evaluate(Instance instance) {
+	private boolean evaluate(Instance instance,
+			boolean toBeClustered) {
 
-		boolean event = false;
-
-		// check simple compare values by hand and set them missing for the clustering
-		for (int i = 0; i < clusterOffset; i++) {
-			double outOfClusterValue = instance.value(i);
-			event = evaluateValueManually(outOfClusterValue, i);
-			instance.setMissing(i);
-		}
-
+		timestamp++;
+		
 		// filter the same instances out for performance purposes
 		if (instanceFiltered(instance)) {
 			return false;
 		}
+		
+		boolean event = false;
 
-		clusterer.trainOnInstanceImpl(instance);
-
-		timestamp++;
-
-		int numberOfClusters = ((CobWeb) clusterer).numberOfClusters();
-		if (oldNumberOfClusters < numberOfClusters) {
-			String txt = "event: new cluster created :" + numberOfClusters
-					+ " assigned to:";
-
-			double[] result = clusterer.getVotesForInstance(instance);
-			for (int i = 0; i < result.length; i++)
-				txt += i + "=" + result[i] + " | ";
-
-			log.info("step:" + timestamp + " --> " + instance + " --> " + txt);
-
-			event = true;
+		if(!toBeClustered){
+			for (int i = 0; i < instance.numValues(); i++) {
+				double outOfClusterValue = instance.value(i);
+				event = evaluateValueManually(outOfClusterValue, i);
+			}
+			
 		}
+		
+		else{
+			AbstractClusterer currentClusterer = clusterers[clustererCounter];
+			currentClusterer.trainOnInstance(instance);
+			int numberOfClusters = ((CobWeb) currentClusterer).numberOfClusters();
+			
+			if (clustererSizes[clustererCounter] < numberOfClusters) {
+				String txt = "event: new cluster created :" + numberOfClusters
+						+ " assigned to:";
 
-		oldNumberOfClusters = numberOfClusters;
+				double[] result = currentClusterer.getVotesForInstance(instance);
+				for (int i = 0; i < result.length; i++)
+					txt += i + "=" + result[i] + " | ";
 
+				log.info("step:" + timestamp + " --> " + instance + " --> " + txt);
+
+				event = true;
+				clustererSizes[clustererCounter] = numberOfClusters;
+				if(++clustererCounter == clusterers.length)
+					clustererCounter = 0;
+			}
+		}
+	
 		return event;
 
 	}
 
 	public String toString() {
-		return clusterer.toString();
+		return "hellooooo";
 	}
 
 	@Override
 	public void trainFromArff(String path) {
-		clusterer.prepareForUse();
+		for(AbstractClusterer clusterer : clusterers){
+			clusterer.prepareForUse();
+		}
+
 		ArffLoader loader = new ArffLoader();
 		try {
 			loader.setFile(new File(path));
 
 			dataset = loader.getDataSet();
 
-			//experiment
-			newInstances = new Instances(dataset);
-			for(int i = dataset.numAttributes() - 1; i > 0; i--){
-				newInstances.deleteAttributeAt(i);
-			}
+			Instances dataset0 = new Instances(dataset);
+			dataset0.deleteAttributeAt(1);
+			dataset0.deleteAttributeAt(1);
+			dataset0.deleteAttributeAt(1);
+			dataset0.deleteAttributeAt(1);
+			datasets.add(dataset0);
 			
-			for(int k = 0; k < newInstances.numInstances(); k++){
-				Instance instance = newInstances.get(k);
-				evaluate(instance);
+			Instances dataset1 = new Instances(dataset);
+			dataset1.deleteAttributeAt(0);
+			dataset1.deleteAttributeAt(0);
+			dataset1.deleteAttributeAt(0);
+			datasets.add(dataset1);
+
+			for (int i = 0; i < dataset.numInstances(); i++) {
+				Instance instance0 = dataset0.get(i);
+				evaluate(instance0, false);
+
+				Instance instance1 = dataset1.get(i);
+				evaluate(instance1, true);
 			}
-			//experiment end
-			
-//			for (int i = 0; i < dataset.numInstances(); i++) {
-//				Instance instance = dataset.get(i);
-//				evaluate(instance);
-//			}
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -151,6 +162,9 @@ public class MoaEvaluator implements Evaluator {
 	private boolean instanceFiltered(Instance instance) {
 		boolean found = false;
 		for (Instance filterInstance : instanceFilter) {
+			if(filterInstance.numAttributes() != instance.numAttributes())
+				continue;
+			
 			boolean equal = true;
 			for (int i = 0; i < instance.numValues(); i++) {
 				if (!("" + instance.value(i)).equals(""
@@ -175,11 +189,11 @@ public class MoaEvaluator implements Evaluator {
 		return false;
 	}
 
-	private boolean evaluateValueManually(double value, int index) {
+	private boolean evaluateValueManually(double value, int type) {
 
 		boolean result = false;
 
-		switch (index) {
+		switch (type) {
 		case 0:
 			if (value > maxSoFar) {
 				maxSoFar = value;
@@ -195,6 +209,40 @@ public class MoaEvaluator implements Evaluator {
 		}
 
 		return result;
+	}
+	
+	private Instance predictionFeatureToInstance(Vector<PredictionFeature> results){
+		Instances dataset = datasets.get(datasetCounter);
+		Instance instance = new DenseInstance(dataset.numAttributes());
+		instance.setDataset(dataset);
+		int pos = 0;
+
+		for (PredictionFeature feature : results) {
+			if (feature.getResult() == null) {
+				pos++;
+				continue;
+			}
+
+			if (dataset.attribute(pos).isNumeric()) {
+				if (!feature.getResult().equals("?")) {
+					instance.setValue(pos,
+							(double) Double.valueOf(feature.getResult()));
+				} else {
+					instance.setMissing(pos);
+				}
+
+			} else {
+				instance.setValue(pos, feature.getResult());
+			}
+
+			pos++;
+		}
+		
+		
+		if(++datasetCounter == datasets.size())
+			datasetCounter = 0;
+		
+		return instance;
 	}
 
 }
