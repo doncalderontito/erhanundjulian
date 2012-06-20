@@ -13,8 +13,6 @@ public class EdgeTimeProcessor implements PredictionProcessor {
 	private long oldDay = -1;
 	private int oldValue = -1;
 	private int edgeCounter = 0;
-	static final float ERROR_MARGIN_PERCENT = 0.05f;
-	static final float ERROR_MARGIN_ABSOLUTE = 1.0f;
 	
 	@Override
 	public void setCompleteData(DataContainer data) {

@@ -3,9 +3,11 @@ package de.tud.kom.challenge;
 import java.util.Vector;
 
 import de.tud.kom.challenge.prediction.processors.AbsolutePowerJumpProcessor;
+import de.tud.kom.challenge.prediction.processors.DaySegmentProcessor;
 import de.tud.kom.challenge.prediction.processors.EdgeProcessor;
 import de.tud.kom.challenge.prediction.processors.EdgeTimeProcessor;
 import de.tud.kom.challenge.prediction.processors.HistoricYesterdayPredictor;
+import de.tud.kom.challenge.prediction.processors.EnergyClassProcessor;
 import de.tud.kom.challenge.prediction.processors.PredictionProcessor;
 import de.tud.kom.challenge.prediction.processors.SimpleMaxWindowProcessor;
 import de.tud.kom.challenge.prediction.processors.SimplePipeThroughProcessor;
@@ -21,6 +23,8 @@ public class PredictorList {
 		processors.add(new SmoothValueProcessor());			//smoothes the noise
 		processors.add(new EdgeProcessor());				//true if newVal != oldVal +- 5%
 		processors.add(new EdgeTimeProcessor());			//counts edges per Day noise
+		processors.add(new DaySegmentProcessor());			//from dusk till dawn
+		processors.add(new EnergyClassProcessor());			//0 - 1000+
 		
 		//processors.add(new HistoricYesterdayPredictor());
 		//processors.add(new AbsolutePowerJumpProcessor());
