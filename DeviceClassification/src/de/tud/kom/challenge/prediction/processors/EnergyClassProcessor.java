@@ -21,7 +21,7 @@ public class EnergyClassProcessor implements PredictionProcessor {
 		if(entry.getValue() == 0)
 			energyClass = "0";
 		else if(entry.getValue() < 11)
-			energyClass = "0-10";
+			energyClass = "1-10";
 		else if(entry.getValue() < 101)
 			energyClass = "11-100";
 		else if(entry.getValue() < 1001)
