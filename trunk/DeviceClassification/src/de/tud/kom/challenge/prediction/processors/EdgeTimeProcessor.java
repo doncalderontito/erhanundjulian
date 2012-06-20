@@ -1,14 +1,18 @@
 package de.tud.kom.challenge.prediction.processors;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Vector;
 
 import de.tud.kom.challenge.prediction.DataContainer;
 import de.tud.kom.challenge.prediction.DataEntry;
 import de.tud.kom.challenge.prediction.PredictionFeature;
 
-public class EdgeProcessor implements PredictionProcessor {
+public class EdgeTimeProcessor implements PredictionProcessor {
 
-	int oldValue = -1;
+	private long oldDay = -1;
+	private int oldValue = -1;
+	private int edgeCounter = 0;
 	static final float ERROR_MARGIN_PERCENT = 0.05f;
 	static final float ERROR_MARGIN_ABSOLUTE = 1.0f;
 	
@@ -17,41 +21,35 @@ public class EdgeProcessor implements PredictionProcessor {
 		// TODO Auto-generated method stub
 
 	}
-	
-	public static boolean isEdge(int oldVal, int newVal) {
-		if((newVal > oldVal * (1 + ERROR_MARGIN_PERCENT) || newVal < oldVal * (1 - ERROR_MARGIN_PERCENT)) && 
-				(Math.abs(newVal - oldVal) > ERROR_MARGIN_ABSOLUTE)) {
-			return true;
-		}
-		return false;
-	}
 
 	@Override
 	public Vector<PredictionFeature> addValueToModel(DataEntry entry) {
+		Calendar calendar = Calendar.getInstance();
 		Vector<PredictionFeature> features = new Vector<PredictionFeature>();
-		if(oldValue == -1) {
-			features.add(new PredictionFeature("EdgeDetection", "?"));
+		calendar.setTimeInMillis(entry.getTime() * 1000);
+		if(oldDay != calendar.get(Calendar.DAY_OF_YEAR) && oldDay != -1) {
+			features.add(new PredictionFeature("EdgePerTimeDetection", "" + edgeCounter));
+			edgeCounter = 0;
 		}
 		else {
-			if(isEdge(oldValue, entry.getValue())) {
-				features.add(new PredictionFeature("EdgeDetection", "true"));
-			}
-			else {
-				features.add(new PredictionFeature("EdgeDetection", "false"));
+			features.add(new PredictionFeature("EdgePerTimeDetection", "?"));
+			if(EdgeProcessor.isEdge(oldValue, entry.getValue()) && oldValue != -1) {
+				edgeCounter++;
 			}
 		}
 		oldValue = entry.getValue();
+		oldDay = calendar.get(Calendar.DAY_OF_YEAR);
 		return features;
 	}
 
 	@Override
 	public String[] getResultTypes() {
-		return new String[]{"EdgeDetection"};
+		return new String[]{"EdgePerTimeDetection"};
 	}
 
 	@Override
 	public String[] getResultRanges() {
-		return new String[]{"{true, false}"};
+		return new String[]{"numeric"};
 	}
 
 }
