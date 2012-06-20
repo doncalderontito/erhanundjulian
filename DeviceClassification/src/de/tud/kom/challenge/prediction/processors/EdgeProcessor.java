@@ -30,7 +30,7 @@ public class EdgeProcessor implements PredictionProcessor {
 	public Vector<PredictionFeature> addValueToModel(DataEntry entry) {
 		Vector<PredictionFeature> features = new Vector<PredictionFeature>();
 		if(oldValue == -1) {
-			features.add(new PredictionFeature("EdgeDetection", "?"));
+			features.add(new PredictionFeature("EdgeDetection", "false"));
 		}
 		else {
 			if(isEdge(oldValue, entry.getValue())) {

@@ -30,8 +30,8 @@ public class PredictorList {
 		//processors.add(new AbsolutePowerJumpProcessor());
 		//processors.add(new SimpleWindowPredictor());
 		//processors.add(new SimpleMaxWindowProcessor());
-		processors.add(new SimpleTimeProcessor());
-		processors.add(new SimplePipeThroughProcessor());
+		//processors.add(new SimpleTimeProcessor());
+		//processors.add(new SimplePipeThroughProcessor());
 		
 		return processors;
 	}
