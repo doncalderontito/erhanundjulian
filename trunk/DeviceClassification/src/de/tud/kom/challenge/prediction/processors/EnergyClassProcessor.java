@@ -39,7 +39,7 @@ public class EnergyClassProcessor implements PredictionProcessor {
 
 	@Override
 	public String[] getResultRanges() {
-		return new String[]{"{0, 0-10, 11-100, 101-1000, 1000+}"};
+		return new String[]{"{0, 1-10, 11-100, 101-1000, 1000+}"};
 	}
 
 }
