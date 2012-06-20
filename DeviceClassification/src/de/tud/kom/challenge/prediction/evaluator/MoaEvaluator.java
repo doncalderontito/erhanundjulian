@@ -19,96 +19,86 @@ import weka.core.Instances;
 import weka.core.converters.ArffLoader;
 import de.tud.kom.challenge.prediction.PredictionFeature;
 
-public class MoaEvaluator implements Evaluator  {
+public class MoaEvaluator implements Evaluator {
 
 	int timestamp = 0;
 	AbstractClusterer clusterer = new CobWeb();
-
-	private final static Logger log = Logger.getLogger(MoaEvaluator.class.getSimpleName());
-	Instances dataset=null;
+	private final static Logger log = Logger.getLogger(MoaEvaluator.class
+			.getSimpleName());
+	Instances dataset = null;
 	Clustering clustering = null;
-	int oldNumberOfClusters=0;
-	
+	int oldNumberOfClusters = 0;
+	Vector<Instance> instanceFilter = new Vector<Instance>();
+	int filtersize = 10;
+
+	static int clusterOffset = 1;
+
 	@Override
 	public boolean evaluate(Vector<PredictionFeature> results, boolean training) {
-		
-		if (dataset==null)
-		{	
+
+		if (dataset == null) {
 			log.error("dataset not initialized - trainFromArff should be called before");
 			return false;
 		}
-		
+
 		Instance instance = new DenseInstance(dataset.numAttributes());
 		instance.setDataset(dataset);
-		int pos=0;
-		
-		for (PredictionFeature feature:results)
-		{
-			
-			if (feature.getResult() ==null)
-			{
+		int pos = 0;
+
+		for (PredictionFeature feature : results) {
+			if (feature.getResult() == null) {
 				pos++;
 				continue;
 			}
-			
-			if (dataset.attribute(pos).isNumeric())
-			{
-				instance.setValue(pos, (double) Double.valueOf(feature.getResult()));
 
-			}
-			else
-			{
-				if (feature.getResult().equals(Boolean.TRUE))
-					instance.setValue(pos, "true");
-				else
-					instance.setValue(pos, "false");
+			if (dataset.attribute(pos).isNumeric()) {
+				instance.setValue(pos,
+						(double) Double.valueOf(feature.getResult()));
+
+			} else {
+				instance.setValue(pos, feature.getResult());
 			}
 
-				
 			pos++;
 		}
-		//instance.setClassValue(0.0);
-		
-		ArrayList<DataPoint> pointBuffer0 = new ArrayList<DataPoint>();
-		DataPoint point0 = new DataPoint(instance,timestamp);
-		pointBuffer0.add(point0);
 
 		return evaluate(instance);
 	}
 
-
-
-
 	private boolean evaluate(Instance instance) {
-		clusterer.trainOnInstanceImpl(instance);
-		boolean event=false;
-		timestamp++;
-		
-		int numberOfClusters=((CobWeb)clusterer).numberOfClusters();
-		if (oldNumberOfClusters < numberOfClusters)
-		{
-			String txt="event: new cluster created :"+numberOfClusters+" assigned to:";
-			
-			double[] result=clusterer.getVotesForInstance(instance);
-			for(int i=0;i<result.length;i++)
-				txt+=i+"="+result[i]+" | ";
-		
-			log.info("step:"+timestamp+" --> " +instance+ " --> "+txt);
-		
-			event=true;
+
+		if (instanceFiltered(instance)) {
+			return false;
 		}
+
 		
-		oldNumberOfClusters=numberOfClusters;
-		
+		clusterer.trainOnInstanceImpl(instance);
+		boolean event = false;
+		timestamp++;
+
+		int numberOfClusters = ((CobWeb) clusterer).numberOfClusters();
+		if (oldNumberOfClusters < numberOfClusters) {
+			String txt = "event: new cluster created :" + numberOfClusters
+					+ " assigned to:";
+
+			double[] result = clusterer.getVotesForInstance(instance);
+			for (int i = 0; i < result.length; i++)
+				txt += i + "=" + result[i] + " | ";
+
+			log.info("step:" + timestamp + " --> " + instance + " --> " + txt);
+
+			event = true;
+		}
+
+		oldNumberOfClusters = numberOfClusters;
+
 		return event;
-		
+
 	}
 
-	public String toString()
-	{
+	public String toString() {
 		return clusterer.toString();
 	}
-
 
 	@Override
 	public void trainFromArff(String path) {
@@ -116,20 +106,45 @@ public class MoaEvaluator implements Evaluator  {
 		ArffLoader loader = new ArffLoader();
 		try {
 			loader.setFile(new File(path));
-			
+
 			dataset = loader.getDataSet();
-			
-			for (int i=0;i<dataset.numInstances();i++)
-			{
-				Instance instance=dataset.get(i);
+
+			for (int i = 0; i < dataset.numInstances(); i++) {
+				Instance instance = dataset.get(i);
 				evaluate(instance);
 			}
-			
+
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 	}
-	
+
+	private boolean instanceFiltered(Instance instance) {
+		boolean found = false;
+		for (Instance filterInstance : instanceFilter) {
+			boolean equal = true;
+			for (int i = 0; i < instance.numValues(); i++) {
+				if (!("" + instance.value(i)).equals(""
+						+ filterInstance.value(i))) {
+					equal = false;
+					break;
+				}
+			}
+			if (equal) {
+				found = true;
+				break;
+			}
+		}
+
+		if (found) {
+			return true;
+		} else {
+			instanceFilter.add(instance);
+			if (instanceFilter.size() > filtersize)
+				instanceFilter.remove(0);
+		}
+		return false;
+	}
+
 }
