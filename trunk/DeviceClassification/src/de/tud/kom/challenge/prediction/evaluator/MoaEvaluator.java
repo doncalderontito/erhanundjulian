@@ -26,6 +26,7 @@ public class MoaEvaluator implements Evaluator {
 	private final static Logger log = Logger.getLogger(MoaEvaluator.class
 			.getSimpleName());
 	Instances dataset = null;
+	Instances newInstances = null;
 	Clustering clustering = null;
 	int oldNumberOfClusters = 0;
 	Vector<Instance> instanceFilter = new Vector<Instance>();
@@ -33,16 +34,22 @@ public class MoaEvaluator implements Evaluator {
 
 	static int clusterOffset = 1;
 
-	@Override
-	public boolean evaluate(Vector<PredictionFeature> results, boolean training) {
+	private double maxSoFar;
+	private double minSoFar;
 
+	@Override
+	public boolean evaluate(Vector<PredictionFeature> oldResults, boolean training) {
+		Vector<PredictionFeature> results;
 		if (dataset == null) {
 			log.error("dataset not initialized - trainFromArff should be called before");
 			return false;
 		}
 
-		Instance instance = new DenseInstance(dataset.numAttributes());
-		instance.setDataset(dataset);
+		results = new Vector<PredictionFeature>();
+		results.add(oldResults.firstElement());
+		
+		Instance instance = new DenseInstance(newInstances.numAttributes());
+		instance.setDataset(newInstances);
 		int pos = 0;
 
 		for (PredictionFeature feature : results) {
@@ -67,13 +74,22 @@ public class MoaEvaluator implements Evaluator {
 
 	private boolean evaluate(Instance instance) {
 
+		boolean event = false;
+
+		// check simple compare values by hand and set them missing for the clustering
+		for (int i = 0; i < clusterOffset; i++) {
+			double outOfClusterValue = instance.value(i);
+			event = evaluateValueManually(outOfClusterValue, i);
+			instance.setMissing(i);
+		}
+
+		// filter the same instances out for performance purposes
 		if (instanceFiltered(instance)) {
 			return false;
 		}
 
-		
 		clusterer.trainOnInstanceImpl(instance);
-		boolean event = false;
+
 		timestamp++;
 
 		int numberOfClusters = ((CobWeb) clusterer).numberOfClusters();
@@ -109,10 +125,22 @@ public class MoaEvaluator implements Evaluator {
 
 			dataset = loader.getDataSet();
 
-			for (int i = 0; i < dataset.numInstances(); i++) {
-				Instance instance = dataset.get(i);
+			//experiment
+			newInstances = new Instances(dataset);
+			for(int i = dataset.numAttributes() - 1; i > 0; i--){
+				newInstances.deleteAttributeAt(i);
+			}
+			
+			for(int k = 0; k < newInstances.numInstances(); k++){
+				Instance instance = newInstances.get(k);
 				evaluate(instance);
 			}
+			//experiment end
+			
+//			for (int i = 0; i < dataset.numInstances(); i++) {
+//				Instance instance = dataset.get(i);
+//				evaluate(instance);
+//			}
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -145,6 +173,28 @@ public class MoaEvaluator implements Evaluator {
 				instanceFilter.remove(0);
 		}
 		return false;
+	}
+
+	private boolean evaluateValueManually(double value, int index) {
+
+		boolean result = false;
+
+		switch (index) {
+		case 0:
+			if (value > maxSoFar) {
+				maxSoFar = value;
+				result = true;
+			}
+			if (value < minSoFar) {
+				minSoFar = value;
+				result = true;
+			}
+			break;
+		case 1:
+			break;
+		}
+
+		return result;
 	}
 
 }
