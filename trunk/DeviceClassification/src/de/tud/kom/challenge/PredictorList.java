@@ -9,7 +9,7 @@ import de.tud.kom.challenge.prediction.processors.SimpleMaxWindowProcessor;
 import de.tud.kom.challenge.prediction.processors.SimplePipeThroughProcessor;
 import de.tud.kom.challenge.prediction.processors.SimpleTimeProcessor;
 import de.tud.kom.challenge.prediction.processors.SimpleWindowPredictor;
-import de.tud.kom.challenge.processors.SmoothValueProcessor;
+import de.tud.kom.challenge.prediction.processors.SmoothValueProcessor;
 
 public class PredictorList {
 	

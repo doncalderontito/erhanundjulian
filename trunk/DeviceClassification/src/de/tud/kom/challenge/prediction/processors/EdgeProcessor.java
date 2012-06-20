@@ -1,11 +1,10 @@
-package de.tud.kom.challenge.processors;
+package de.tud.kom.challenge.prediction.processors;
 
 import java.util.Vector;
 
 import de.tud.kom.challenge.prediction.DataContainer;
 import de.tud.kom.challenge.prediction.DataEntry;
 import de.tud.kom.challenge.prediction.PredictionFeature;
-import de.tud.kom.challenge.prediction.processors.PredictionProcessor;
 
 public class EdgeProcessor implements PredictionProcessor {
 
