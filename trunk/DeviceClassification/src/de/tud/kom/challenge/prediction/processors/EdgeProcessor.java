@@ -10,7 +10,7 @@ public class EdgeProcessor implements PredictionProcessor {
 
 	int oldValue = -1;
 	public static final float ERROR_MARGIN_PERCENT = 0.05f;
-	public static final float ERROR_MARGIN_ABSOLUTE = 1.1f;
+	public static final float ERROR_MARGIN_ABSOLUTE = 2.1f;
 	
 	@Override
 	public void setCompleteData(DataContainer data) {
@@ -19,6 +19,7 @@ public class EdgeProcessor implements PredictionProcessor {
 	}
 	
 	public static boolean isEdge(int oldVal, int newVal) {
+		
 		if((newVal > oldVal * (1 + ERROR_MARGIN_PERCENT) || newVal < oldVal * (1 - ERROR_MARGIN_PERCENT)) && 
 				(Math.abs(newVal - oldVal) > ERROR_MARGIN_ABSOLUTE)) {
 			return true;
