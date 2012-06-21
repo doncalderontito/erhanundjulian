@@ -20,6 +20,8 @@ public class ClusterProcessor implements PredictionProcessor {
 	public ClusterProcessor() {
 		max = new int[getClusterNumber()];
 		min = new int[getClusterNumber()];
+		for(int i = 0; i < getClusterNumber(); i++)
+			min[i] = Integer.MAX_VALUE;
 	}
 	
 	@Override
@@ -34,7 +36,7 @@ public class ClusterProcessor implements PredictionProcessor {
 		int cluster = 0;
 		if(oldValue != -1) {
 			if(EdgeProcessor.isEdge(oldValue, entry.getValue())) {
-				cluster = Math.min(getClusterNumber(), clusterNeeded);
+				cluster = Math.min(getClusterNumber() - 1, clusterNeeded);
 				for(int i = 0; i < clusterNeeded; i++) {
 					if(entry.getValue() <= min[i] && entry.getValue() >= max[i]) {
 						cluster = i;
@@ -42,7 +44,7 @@ public class ClusterProcessor implements PredictionProcessor {
 					}
 				}
 				if(cluster == clusterNeeded) {
-					clusterNeeded = Math.min(getClusterNumber(), clusterNeeded + 1);
+					clusterNeeded = Math.min(getClusterNumber() - 1, clusterNeeded + 1);
 				}
 			}
 		}
