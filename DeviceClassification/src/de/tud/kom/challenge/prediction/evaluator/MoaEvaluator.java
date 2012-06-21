@@ -47,15 +47,26 @@ public class MoaEvaluator implements Evaluator {
 	private Vector<Instances> datasets = new Vector<Instances>();
 	private int datasetCounter = 0;
 	
-
 	@Override
 	public boolean evaluate(Vector<PredictionFeature> results, boolean training) {
 
+		if(!training){
+			try {
+				MoaEvaluator thisClone = (MoaEvaluator) this.clone();
+				boolean cloneEvent = thisClone.evaluate(results, true);
+				if(cloneEvent){
+					
+				}
+				
+			} catch (CloneNotSupportedException e) {
+				e.printStackTrace();
+			}
+		}
 		if (dataset == null) {
 			log.error("dataset not initialized - trainFromArff should be called before");
 			return false;
 		}
-
+		
 		Vector<PredictionFeature> resultsPart1 = new Vector<PredictionFeature>();
 		resultsPart1.add(results.get(0));
 		Instance instance1 = this.predictionFeatureToInstance(resultsPart1);
@@ -64,6 +75,7 @@ public class MoaEvaluator implements Evaluator {
 		Vector<PredictionFeature> resultsPart2 = new Vector<PredictionFeature>();
 		resultsPart2.add(results.get(3));
 		resultsPart2.add(results.get(4));
+		resultsPart2.add(results.get(5));
 		Instance instance2 = this.predictionFeatureToInstance(resultsPart2);
 		boolean event2 = evaluate(instance2, true);
 		
@@ -133,6 +145,7 @@ public class MoaEvaluator implements Evaluator {
 			dataset = loader.getDataSet();
 
 			Instances dataset0 = new Instances(dataset);
+			dataset0.deleteAttributeAt(1);
 			dataset0.deleteAttributeAt(1);
 			dataset0.deleteAttributeAt(1);
 			dataset0.deleteAttributeAt(1);
