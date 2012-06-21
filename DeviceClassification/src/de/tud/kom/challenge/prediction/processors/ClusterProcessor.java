@@ -12,6 +12,7 @@ public class ClusterProcessor implements PredictionProcessor {
 	private int currentCluster = 0;
 	private int oldValue = -1;
 	private int clusterNeeded = 1;
+	private int cluster = 0;
 	
 	private int getClusterNumber() {
 		return (int) Math.floor(1.0f / EdgeProcessor.ERROR_MARGIN_PERCENT / 2.0f);
@@ -33,7 +34,6 @@ public class ClusterProcessor implements PredictionProcessor {
 	@Override
 	public Vector<PredictionFeature> addValueToModel(DataEntry entry) {
 		Vector<PredictionFeature> features = new Vector<PredictionFeature>();
-		int cluster = 0;
 		if(oldValue != -1) {
 			if(EdgeProcessor.isEdge(oldValue, entry.getValue())) {
 				cluster = Math.min(getClusterNumber() - 1, clusterNeeded);
