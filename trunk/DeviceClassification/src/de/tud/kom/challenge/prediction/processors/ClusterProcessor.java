@@ -38,7 +38,7 @@ public class ClusterProcessor implements PredictionProcessor {
 			if(EdgeProcessor.isEdge(oldValue, entry.getValue())) {
 				cluster = Math.min(getClusterNumber() - 1, clusterNeeded);
 				for(int i = 0; i < clusterNeeded; i++) {
-					if(entry.getValue() <= min[i] && entry.getValue() >= max[i]) {
+					if(entry.getValue() >= min[i] && entry.getValue() <= max[i]) {
 						cluster = i;
 						break;
 					}
