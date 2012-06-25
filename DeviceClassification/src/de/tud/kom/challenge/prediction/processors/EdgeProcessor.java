@@ -20,6 +20,12 @@ public class EdgeProcessor implements PredictionProcessor {
 	
 	public static boolean isEdge(int oldVal, int newVal) {
 		
+		if(oldVal == -1)
+			return true;
+		
+		if(oldVal == 0 && newVal != 0)
+			return true;
+		
 		if((newVal > oldVal * (1 + ERROR_MARGIN_PERCENT) || newVal < oldVal * (1 - ERROR_MARGIN_PERCENT)) && 
 				(Math.abs(newVal - oldVal) > ERROR_MARGIN_ABSOLUTE)) {
 			return true;
