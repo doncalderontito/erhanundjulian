@@ -77,15 +77,15 @@ public class EnergyLevelProcessor implements PredictionProcessor {
 				levelMax[lastLevel] = duration;
 			startTime = input.getTime();
 		}
-		features.add(new PredictionFeature("LevelDurationMax", "" + levelMax[level]));
 		features.add(new PredictionFeature("LevelDurationMin", "" + levelMin[level]));
+		features.add(new PredictionFeature("LevelDurationMax", "" + levelMax[level]));
 		lastLevel = level;
 		return features;
 	}
 
 	@Override
 	public String[] getResultTypes() {
-		return new String[] { "EnergyLevel", "LevelDurationMax", "LevelDurationMin" };
+		return new String[] { "EnergyLevel", "LevelDurationMin", "LevelDurationMax" };
 	}
 
 	@Override
