@@ -85,11 +85,7 @@ public class MoaEvaluator implements Evaluator  {
 
 
 	private boolean evaluate(Instance instance) {
-		
-		if(instanceFiltered(instance)){
-			return false;
-		}
-		
+	
 		boolean event=false;
 		
 		//manual checking
@@ -102,6 +98,10 @@ public class MoaEvaluator implements Evaluator  {
 		instance.setMissing(1);
 		instance.setMissing(2);
 		//end manual checking
+		
+		if(instanceFiltered(instance)){
+			return event;
+		}
 		
 		clusterer.trainOnInstanceImpl(instance);
 		
