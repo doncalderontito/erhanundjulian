@@ -11,8 +11,8 @@ public class EnergyLevelProcessor implements PredictionProcessor {
 	private final int levelRange = 50;
 
 	private int[] levelRepresentatives = new int[levelRange];
-	private int[] levelMax = new int[levelRange];
-	private int[] levelMin = new int[levelRange];
+	private long[] levelMax = new long[levelRange];
+	private long[] levelMin = new long[levelRange];
 
 	private int levelsUsed = 1;
 
@@ -20,11 +20,11 @@ public class EnergyLevelProcessor implements PredictionProcessor {
 	private double margineAbsolut = 4;
 	
 	private int lastLevel = -1;
-	private int duration = 0;
+	private long startTime = -1;
 
 	public EnergyLevelProcessor() {
 		for(int i = 0; i < levelRange; i++) {
-			levelMin[i] = Integer.MAX_VALUE;
+			levelMin[i] = Long.MAX_VALUE;
 		}
 	}
 	
@@ -38,6 +38,9 @@ public class EnergyLevelProcessor implements PredictionProcessor {
 
 		int consumption = input.getValue();
 		int level = 0;
+		long duration = 0;
+		if(startTime == -1)
+			startTime = input.getTime();
 
 		Vector<PredictionFeature> features = new Vector<PredictionFeature>();
 
@@ -67,14 +70,12 @@ public class EnergyLevelProcessor implements PredictionProcessor {
 		features.add(new PredictionFeature("EnergyLevel", "Level" + level));
 		
 		if(level != lastLevel && lastLevel != -1) {
+			duration = input.getTime() - startTime;
 			if(duration < levelMin[lastLevel])
 				levelMin[lastLevel] = duration;
 			if(duration > levelMax[lastLevel])
 				levelMax[lastLevel] = duration;
-			duration = 0;
-		}
-		else {
-			duration++;
+			startTime = input.getTime();
 		}
 		features.add(new PredictionFeature("LevelDurationMax", "" + levelMax[level]));
 		features.add(new PredictionFeature("LevelDurationMin", "" + levelMin[level]));
