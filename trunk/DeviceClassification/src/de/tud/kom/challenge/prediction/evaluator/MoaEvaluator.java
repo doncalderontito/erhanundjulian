@@ -95,8 +95,8 @@ public class MoaEvaluator implements Evaluator  {
 		
 		event = this.evaluateDuration(level, min, max);
 		
-		instance.setMissing(1);
-		instance.setMissing(2);
+		instance.setValue(1, -1);
+		instance.setValue(2, -1);
 		//end manual checking
 		
 		if(instanceFiltered(instance)){
