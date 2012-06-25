@@ -34,7 +34,7 @@ public class PredictorList {
 		//processors.add(new SimpleWindowPredictor());
 		//processors.add(new SimpleMaxWindowProcessor());
 		
-		processors.add(new SimplePipeThroughProcessor());
+		//processors.add(new SimplePipeThroughProcessor());
 		
 		return processors;
 	}
