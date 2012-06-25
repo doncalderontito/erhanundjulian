@@ -23,7 +23,7 @@ public class PredictorList {
 		Vector<PredictionProcessor> processors = new Vector<PredictionProcessor>();
 		
 		//processors.add(new SmoothValueProcessor());			//smoothes the noise
-		processors.add(new EnergyLevelProcessor());
+		//processors.add(new EnergyLevelProcessor());
 		//processors.add(new EdgeProcessor());
 		processors.add(new SimpleTimeProcessor());          //determines the day of the week
 		processors.add(new DaySegmentProcessor());			//from dusk till dawn

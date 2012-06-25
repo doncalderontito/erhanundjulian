@@ -13,7 +13,6 @@ import moa.gui.visualization.DataPoint;
 
 import org.apache.log4j.Logger;
 
-import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -23,7 +22,7 @@ import de.tud.kom.challenge.prediction.PredictionFeature;
 public class MoaEvaluator implements Evaluator  {
 
 	int timestamp = 0;
-	AbstractClusterer clusterer = new CobWeb();
+	CobWeb clusterer = new CobWeb();
 
 	private final static Logger log = Logger.getLogger(MoaEvaluator.class.getSimpleName());
 	Instances dataset=null;
@@ -31,7 +30,7 @@ public class MoaEvaluator implements Evaluator  {
 	int oldNumberOfClusters=0;
 	
 	//filter
-	private final int filterSize = 10;
+	private final int filterSize = 1;
 	private Vector<Instance> instanceFilter = new Vector<Instance>();
 	
 	private HashMap<String, Double> levelsToMinDuration = new HashMap<String, Double>();
@@ -74,9 +73,9 @@ public class MoaEvaluator implements Evaluator  {
 		}
 		//instance.setClassValue(0.0);
 		
-		//ArrayList<DataPoint> pointBuffer0 = new ArrayList<DataPoint>();
-		//DataPoint point0 = new DataPoint(instance,timestamp);
-		//pointBuffer0.add(point0);
+//		ArrayList<DataPoint> pointBuffer0 = new ArrayList<DataPoint>();
+//		DataPoint point0 = new DataPoint(instance,timestamp);
+//		pointBuffer0.add(point0);
 
 		return evaluate(instance);
 	}
@@ -89,20 +88,21 @@ public class MoaEvaluator implements Evaluator  {
 		boolean event=false;
 		
 		//manual checking
-		String level = instance.stringValue(0);
-		double min = instance.value(1);
-		double max = instance.value(2);
-		
-		event = this.evaluateDuration(level, min, max);
-		
-		instance.setValue(1, -1);
-		instance.setValue(2, -1);
-		//end manual checking
+//		String level = instance.stringValue(0);
+//		double min = instance.value(1);
+//		double max = instance.value(2);
+//		
+//		event = this.evaluateDuration(level, min, max);
+//		
+//		instance.setValue(1, -1);
+//		instance.setValue(2, -1);
+//		//end manual checking
 		
 		if(instanceFiltered(instance)){
 			return event;
 		}
 		
+		System.out.println("instance not filtered " + instance.stringValue(0) + instance.stringValue(1));
 		clusterer.trainOnInstanceImpl(instance);
 		
 		timestamp++;
@@ -119,6 +119,7 @@ public class MoaEvaluator implements Evaluator  {
 			log.info("step:"+timestamp+" --> " +instance+ " --> "+txt);
 		
 			event=true;
+
 		}
 		
 		oldNumberOfClusters=numberOfClusters;
@@ -149,7 +150,6 @@ public class MoaEvaluator implements Evaluator  {
 			}
 			
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
