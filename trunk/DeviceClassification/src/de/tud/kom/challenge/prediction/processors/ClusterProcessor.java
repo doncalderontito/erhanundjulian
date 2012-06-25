@@ -15,7 +15,7 @@ public class ClusterProcessor implements PredictionProcessor {
 	private int cluster = 0;
 	
 	private int getClusterNumber() {
-		return (int) Math.floor(1.0f / EdgeProcessor.ERROR_MARGIN_PERCENT / 2.0f);
+		return 50;
 	}
 	
 	public ClusterProcessor() {
@@ -33,18 +33,21 @@ public class ClusterProcessor implements PredictionProcessor {
 
 	@Override
 	public Vector<PredictionFeature> addValueToModel(DataEntry entry) {
+		
 		Vector<PredictionFeature> features = new Vector<PredictionFeature>();
 		if(oldValue != -1) {
 			if(EdgeProcessor.isEdge(oldValue, entry.getValue())) {
-				cluster = Math.min(getClusterNumber() - 1, clusterNeeded);
-				for(int i = 0; i < clusterNeeded; i++) {
+				oldValue = entry.getValue();
+				boolean apprClusterFound = false;
+				for(int i = 0; i < getClusterNumber()-1; i++) {
 					if(entry.getValue() >= min[i] && entry.getValue() <= max[i]) {
 						cluster = i;
+						apprClusterFound = true;
 						break;
 					}
 				}
-				if(cluster == clusterNeeded) {
-					clusterNeeded = Math.min(getClusterNumber() - 1, clusterNeeded + 1);
+				if(apprClusterFound == false){
+					cluster = clusterNeeded++;					
 				}
 			}
 		}
@@ -53,7 +56,6 @@ public class ClusterProcessor implements PredictionProcessor {
 		if(entry.getValue() > max[cluster])
 			max[cluster] = entry.getValue();
 		features.add(new PredictionFeature("EnergyClass", "Cluster" + cluster));
-		oldValue = entry.getValue();
 		return features;
 	}
 
