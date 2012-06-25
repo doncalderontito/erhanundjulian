@@ -92,7 +92,7 @@ public class EnergyLevelProcessor implements PredictionProcessor {
 	public String[] getResultRanges() {
 		String result = "{Level0";
 		for (int i = 1; i < levelRange; i++)
-			result += ", Level" + i;
+			result += ",Level" + i;
 		result += "}";
 		return new String[] { result, "numeric", "numeric"};
 	}
