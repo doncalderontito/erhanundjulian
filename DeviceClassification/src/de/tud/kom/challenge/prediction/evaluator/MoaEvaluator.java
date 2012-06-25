@@ -74,9 +74,9 @@ public class MoaEvaluator implements Evaluator  {
 		}
 		//instance.setClassValue(0.0);
 		
-		ArrayList<DataPoint> pointBuffer0 = new ArrayList<DataPoint>();
-		DataPoint point0 = new DataPoint(instance,timestamp);
-		pointBuffer0.add(point0);
+		//ArrayList<DataPoint> pointBuffer0 = new ArrayList<DataPoint>();
+		//DataPoint point0 = new DataPoint(instance,timestamp);
+		//pointBuffer0.add(point0);
 
 		return evaluate(instance);
 	}

@@ -26,7 +26,7 @@ public class DaySegmentProcessor implements PredictionProcessor {
 			segment = "afternoon";
 		else
 			segment = "evening";
-		features.add(new PredictionFeature("EdgeDetection", segment));
+		features.add(new PredictionFeature("DaySegment", segment));
 		return features;
 	}
 
