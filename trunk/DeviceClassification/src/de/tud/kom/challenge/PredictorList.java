@@ -25,8 +25,8 @@ public class PredictorList {
 		//processors.add(new SmoothValueProcessor());			//smoothes the noise
 		processors.add(new EnergyLevelProcessor());
 		//processors.add(new EdgeProcessor());
-		//processors.add(new SimpleTimeProcessor());          //determines the day of the week
-		//processors.add(new DaySegmentProcessor());			//from dusk till dawn
+		processors.add(new SimpleTimeProcessor());          //determines the day of the week
+		processors.add(new DaySegmentProcessor());			//from dusk till dawn
 		//processors.add(new EnergyClassProcessor());			//0 - 1000+
 		
 		//processors.add(new HistoricYesterdayPredictor());
