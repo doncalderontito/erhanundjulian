@@ -14,8 +14,8 @@ public class EnergyLevelProcessor implements PredictionProcessor {
 
 	private int levelsUsed = 1;
 
-	private double marginePercentage = 0.05;
-	private double margineAbsolut = 2;
+	private double marginePercentage = 0.1;
+	private double margineAbsolut = 4;
 
 	@Override
 	public void setCompleteData(DataContainer data) {
