@@ -37,7 +37,7 @@ public class DaySegmentProcessor implements PredictionProcessor {
 
 	@Override
 	public String[] getResultRanges() {
-		return new String[]{"{morning, noon, afternoon, evening}"};
+		return new String[]{"{morning,noon,afternoon,evening}"};
 	}
 
 }
