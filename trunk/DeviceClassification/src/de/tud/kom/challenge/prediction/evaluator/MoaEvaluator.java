@@ -3,6 +3,7 @@ package de.tud.kom.challenge.prediction.evaluator;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Vector;
 
 import moa.cluster.Clustering;
@@ -32,6 +33,9 @@ public class MoaEvaluator implements Evaluator  {
 	//filter
 	private final int filterSize = 10;
 	private Vector<Instance> instanceFilter = new Vector<Instance>();
+	
+	private HashMap<String, Double> levelsToMinDuration = new HashMap<String, Double>();
+	private HashMap<String, Double> levelsToMaxDuration = new HashMap<String, Double>();
 	
 	@Override
 	public boolean evaluate(Vector<PredictionFeature> results, boolean training) {
@@ -86,8 +90,21 @@ public class MoaEvaluator implements Evaluator  {
 			return false;
 		}
 		
-		clusterer.trainOnInstanceImpl(instance);
 		boolean event=false;
+		
+		//manual checking
+		String level = instance.stringValue(0);
+		double min = instance.value(1);
+		double max = instance.value(2);
+		
+		event = this.evaluateDuration(level, min, max);
+		
+		instance.setMissing(1);
+		instance.setMissing(2);
+		//end manual checking
+		
+		clusterer.trainOnInstanceImpl(instance);
+		
 		timestamp++;
 		
 		int numberOfClusters=((CobWeb)clusterer).numberOfClusters();
@@ -163,6 +180,33 @@ public class MoaEvaluator implements Evaluator  {
 				instanceFilter.remove(0);
 		}
 		return false;
+	}
+	
+	private boolean evaluateDuration(String level, double minDuration, double maxDuration){
+		
+		if(!levelsToMinDuration.containsKey(level)){
+			levelsToMinDuration.put(level, Double.valueOf(minDuration));
+			levelsToMaxDuration.put(level, Double.valueOf(maxDuration));
+			return false;
+			
+		}
+		
+		boolean minEvent = false;
+		boolean maxEvent = false;
+		
+		double oldMinDuration = levelsToMinDuration.get(level).doubleValue();
+		if(oldMinDuration > minDuration){
+			levelsToMinDuration.put(level, Double.valueOf(minDuration));
+			minEvent = (minDuration < oldMinDuration * 0.85) && (Math.abs(minDuration - oldMinDuration) > 5);
+		}
+		
+		double oldMaxDuration = levelsToMaxDuration.get(level).doubleValue();
+		if(oldMaxDuration < maxDuration){
+			levelsToMaxDuration.put(level, Double.valueOf(maxDuration));
+			maxEvent = maxDuration > oldMaxDuration * 1.15 && (Math.abs(maxDuration - oldMaxDuration) > 5);
+		}
+		
+		return (minEvent || maxEvent);
 	}
 	
 }
