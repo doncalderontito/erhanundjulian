@@ -8,9 +8,12 @@ import de.tud.kom.challenge.prediction.PredictionFeature;
 
 public class EdgeProcessor implements PredictionProcessor {
 
-	int oldValue = -1;
+	private int oldValue = -1;
 	public static final float ERROR_MARGIN_PERCENT = 0.05f;
 	public static final float ERROR_MARGIN_ABSOLUTE = 2.1f;
+	
+	private static int print = 0;
+	private static long count = 0;
 	
 	@Override
 	public void setCompleteData(DataContainer data) {
@@ -19,7 +22,6 @@ public class EdgeProcessor implements PredictionProcessor {
 	}
 	
 	public static boolean isEdge(int oldVal, int newVal) {
-		
 		if(oldVal == -1)
 			return true;
 		
