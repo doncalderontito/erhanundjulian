@@ -87,7 +87,7 @@ public class MoaEvaluator implements Evaluator {
 		}
 
 		event = event
-				|| this.evaluateEnergyLevelWithTime(level, day, daySegment);
+				| this.evaluateEnergyLevelWithTime(level, day, daySegment);
 
 		return event;
 
@@ -162,7 +162,7 @@ public class MoaEvaluator implements Evaluator {
 			if (lastLevel != level && lastLevel != -1) {
 				double oldMinDuration = levelsToMinDuration.get(lastLevel);
 				if (lastDuration < oldMinDuration)
-					levelsToMinDuration.put(level, lastDuration);
+					levelsToMinDuration.put(lastLevel, lastDuration);
 			}
 		}
 
@@ -171,7 +171,7 @@ public class MoaEvaluator implements Evaluator {
 			boolean minEvent = false;
 
 			double oldMaxDuration = levelsToMaxDuration.get(level);
-			maxEvent = (duration > 1.2 * oldMaxDuration) && (duration - oldMaxDuration > 60*3);
+			maxEvent = (duration > 1.15 * oldMaxDuration) && (duration - oldMaxDuration > 60*3);
 			if(maxEvent){
 				System.out.println("maxEvent in " + level);
 			}
@@ -198,13 +198,8 @@ public class MoaEvaluator implements Evaluator {
 			int daySegment) {
 
 		int argumentsHashValue = level * 100 + day * 10 + daySegment * 1;
-		boolean found = false;
-		for (int seenValue : seenValues) {
-			if (seenValue - argumentsHashValue == 0) {
-				found = true;
-				break;
-			}
-		}
+		boolean found = seenValues.contains(argumentsHashValue);
+		
 		if (!found) {
 			seenValues.add(argumentsHashValue);
 			message = "energy lavel " + level
