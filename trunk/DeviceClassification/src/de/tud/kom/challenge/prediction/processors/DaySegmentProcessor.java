@@ -19,13 +19,13 @@ public class DaySegmentProcessor implements PredictionProcessor {
 		Vector<PredictionFeature> features = new Vector<PredictionFeature>();
 		String segment;
 		if(entry.getTime() % 86400 < 21600)
-			segment = "morning";
+			segment = "1";
 		else if(entry.getTime() % 86400 < 21600 * 2)
-			segment = "noon";
+			segment = "2";
 		else if(entry.getTime() % 86400 < 21600 * 3)
-			segment = "afternoon";
+			segment = "3";
 		else
-			segment = "evening";
+			segment = "4";
 		features.add(new PredictionFeature("DaySegment", segment));
 		return features;
 	}
@@ -37,7 +37,7 @@ public class DaySegmentProcessor implements PredictionProcessor {
 
 	@Override
 	public String[] getResultRanges() {
-		return new String[]{"{morning,noon,afternoon,evening}"};
+		return new String[]{"numeric"};
 	}
 
 }

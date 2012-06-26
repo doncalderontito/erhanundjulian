@@ -3,13 +3,9 @@ package de.tud.kom.challenge.prediction.evaluator;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.HashMap;
 import java.util.Vector;
-
-import moa.cluster.Clustering;
-import moa.clusterers.AbstractClusterer;
-import moa.clusterers.CobWeb;
-import moa.gui.visualization.DataPoint;
 
 import org.apache.log4j.Logger;
 
@@ -17,144 +13,110 @@ import weka.core.DenseInstance;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.converters.ArffLoader;
+
 import de.tud.kom.challenge.prediction.PredictionFeature;
 
-public class MoaEvaluator implements Evaluator  {
+public class MoaEvaluator implements Evaluator {
 
-	int timestamp = 0;
-	CobWeb clusterer = new CobWeb();
+	private final static Logger log = Logger.getLogger(MoaEvaluator.class
+			.getSimpleName());
 
-	private final static Logger log = Logger.getLogger(MoaEvaluator.class.getSimpleName());
-	Instances dataset=null;
-	Clustering clustering = null;
-	int oldNumberOfClusters=0;
-	
-	//filter
+	private Instances dataset;
+
+	// filter
 	private final int filterSize = 1;
 	private Vector<Instance> instanceFilter = new Vector<Instance>();
-	
-	private HashMap<String, Double> levelsToMinDuration = new HashMap<String, Double>();
-	private HashMap<String, Double> levelsToMaxDuration = new HashMap<String, Double>();
-	
+
+	private int lastLevel = -1;
+	private double lastDuration;
+	private HashMap<Integer, Double> levelsToMinDuration = new HashMap<Integer, Double>();
+	private HashMap<Integer, Double> levelsToMaxDuration = new HashMap<Integer, Double>();
+
+	private HashSet<Integer> seenValues = new HashSet<Integer>();
+
+	private String message = "";
+
 	@Override
 	public boolean evaluate(Vector<PredictionFeature> results, boolean training) {
-		
-		if (dataset==null)
-		{	
+
+		if (dataset == null) {
 			log.error("dataset not initialized - trainFromArff should be called before");
 			return false;
 		}
-		
+
 		Instance instance = new DenseInstance(dataset.numAttributes());
 		instance.setDataset(dataset);
-		int pos=0;
-		
-		for (PredictionFeature feature:results)
-		{
-			
-			if (feature.getResult() ==null)
-			{
+		int pos = 0;
+
+		for (PredictionFeature feature : results) {
+
+			if (feature.getResult() == null) {
 				pos++;
 				continue;
 			}
-			
-			if (dataset.attribute(pos).isNumeric())
-			{
-				instance.setValue(pos, (double) Double.valueOf(feature.getResult()));
 
-			}
-			else
-			{
+			if (dataset.attribute(pos).isNumeric()) {
+				instance.setValue(pos,
+						(double) Double.valueOf(feature.getResult()));
+
+			} else {
 				instance.setValue(pos, feature.getResult());
 			}
 
-				
 			pos++;
 		}
-		//instance.setClassValue(0.0);
-		
-//		ArrayList<DataPoint> pointBuffer0 = new ArrayList<DataPoint>();
-//		DataPoint point0 = new DataPoint(instance,timestamp);
-//		pointBuffer0.add(point0);
 
-		return evaluate(instance);
+		return evaluate(instance, training);
 	}
 
+	private boolean evaluate(Instance instance, boolean training) {
 
+		int level = (int) instance.value(0);
+		double duration = (double) instance.value(1);
+		int day = (int) instance.value(2);
+		int daySegment = (int) instance.value(3);
 
+		boolean event = false;
 
-	private boolean evaluate(Instance instance) {
-	
-		boolean event=false;
-		
-		//manual checking
-//		String level = instance.stringValue(0);
-//		double min = instance.value(1);
-//		double max = instance.value(2);
-//		
-//		event = this.evaluateDuration(level, min, max);
-//		
-//		instance.setValue(1, -1);
-//		instance.setValue(2, -1);
-//		//end manual checking
-		
-		if(instanceFiltered(instance)){
-			return event;
+		event = this.evaluateDuration(level, duration, training);
+
+		// filter out if same instance without duration data
+		instance.setValue(1, 0);
+		if (!event && instanceFiltered(instance)) {
+			return false;
 		}
-		
-		System.out.println("instance not filtered " + instance.stringValue(0) + instance.stringValue(1));
-		clusterer.trainOnInstanceImpl(instance);
-		
-		timestamp++;
-		
-		int numberOfClusters=((CobWeb)clusterer).numberOfClusters();
-		if (oldNumberOfClusters < numberOfClusters)
-		{
-			String txt="event: new cluster created :"+numberOfClusters+" assigned to:";
-			
-			double[] result=clusterer.getVotesForInstance(instance);
-			for(int i=0;i<result.length;i++)
-				txt+=i+"="+result[i]+" | ";
-		
-			log.info("step:"+timestamp+" --> " +instance+ " --> "+txt);
-		
-			event=true;
 
-		}
-		
-		oldNumberOfClusters=numberOfClusters;
-		
+		event = event
+				|| this.evaluateEnergyLevelWithTime(level, day, daySegment);
+
 		return event;
-		
+
 	}
 
-	public String toString()
-	{
-		return clusterer.toString();
+	public String toString() {
+		return message;
 	}
-
 
 	@Override
 	public void trainFromArff(String path) {
-		clusterer.prepareForUse();
+
 		ArffLoader loader = new ArffLoader();
 		try {
 			loader.setFile(new File(path));
-			
+
 			dataset = loader.getDataSet();
-			
-			for (int i=0;i<dataset.numInstances();i++)
-			{
-				Instance instance=dataset.get(i);
-				evaluate(instance);
+
+			for (int i = 0; i < dataset.numInstances(); i++) {
+				Instance instance = dataset.get(i);
+				evaluate(instance, true);
 			}
-			
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 	}
-	
+
 	private boolean instanceFiltered(Instance instance) {
 		boolean found = false;
 		for (Instance filterInstance : instanceFilter) {
@@ -181,32 +143,76 @@ public class MoaEvaluator implements Evaluator  {
 		}
 		return false;
 	}
-	
-	private boolean evaluateDuration(String level, double minDuration, double maxDuration){
-		
-		if(!levelsToMinDuration.containsKey(level)){
-			levelsToMinDuration.put(level, Double.valueOf(minDuration));
-			levelsToMaxDuration.put(level, Double.valueOf(maxDuration));
-			return false;
-			
+
+	private boolean evaluateDuration(int level, double duration,
+			boolean training) {
+
+		if (!levelsToMinDuration.containsKey(level)) {
+			levelsToMinDuration.put(level, Double.MAX_VALUE);
+			levelsToMaxDuration.put(level, (double) 0);
 		}
-		
-		boolean minEvent = false;
-		boolean maxEvent = false;
-		
-		double oldMinDuration = levelsToMinDuration.get(level).doubleValue();
-		if(oldMinDuration > minDuration){
-			levelsToMinDuration.put(level, Double.valueOf(minDuration));
-			minEvent = (minDuration < oldMinDuration * 0.85) && (Math.abs(minDuration - oldMinDuration) > 5);
+
+		boolean result = false;
+
+		if (training) {
+			double oldMaxDuration = levelsToMaxDuration.get(level);
+			if (duration > oldMaxDuration)
+				levelsToMaxDuration.put(level, duration);
+
+			if (lastLevel != level && lastLevel != -1) {
+				double oldMinDuration = levelsToMinDuration.get(lastLevel);
+				if (lastDuration < oldMinDuration)
+					levelsToMinDuration.put(level, lastDuration);
+			}
 		}
-		
-		double oldMaxDuration = levelsToMaxDuration.get(level).doubleValue();
-		if(oldMaxDuration < maxDuration){
-			levelsToMaxDuration.put(level, Double.valueOf(maxDuration));
-			maxEvent = maxDuration > oldMaxDuration * 1.15 && (Math.abs(maxDuration - oldMaxDuration) > 5);
+
+		else {
+			boolean maxEvent = false;
+			boolean minEvent = false;
+
+			double oldMaxDuration = levelsToMaxDuration.get(level);
+			maxEvent = (duration > 1.2 * oldMaxDuration) && (duration - oldMaxDuration > 60*3);
+			if(maxEvent){
+				System.out.println("maxEvent in " + level);
+			}
+
+			if (level != lastLevel) {
+				double oldMinDuration = levelsToMinDuration.get(lastLevel);
+				minEvent = (oldMinDuration * 0.85 > lastDuration) && (oldMinDuration - lastDuration > 4);
+				if(minEvent){
+					System.out.println("minEvent in " + lastLevel);
+				}
+			}
+
+			result = maxEvent || minEvent;
+
 		}
-		
-		return (minEvent || maxEvent);
+
+		lastLevel = level;
+		lastDuration = duration;
+
+		return result;
 	}
-	
+
+	private boolean evaluateEnergyLevelWithTime(int level, int day,
+			int daySegment) {
+
+		int argumentsHashValue = level * 100 + day * 10 + daySegment * 1;
+		boolean found = false;
+		for (int seenValue : seenValues) {
+			if (seenValue - argumentsHashValue == 0) {
+				found = true;
+				break;
+			}
+		}
+		if (!found) {
+			seenValues.add(argumentsHashValue);
+			message = "energy lavel " + level
+					+ " has never occured at this day time";
+			System.out.println(message);
+		}
+		return !found;
+
+	}
+
 }
