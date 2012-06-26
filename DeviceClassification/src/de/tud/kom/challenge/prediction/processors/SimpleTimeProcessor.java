@@ -14,7 +14,6 @@ import de.tud.kom.challenge.prediction.PredictionFeature;
 public class SimpleTimeProcessor implements PredictionProcessor {
 
 	private final Logger log = Logger.getLogger(this.getClass().getSimpleName());
-	private static final String[] days = new String[]{"","Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"};
 	private static final String type = "WeekdayOfCollection";
 	
 	public void setCompleteData(DataContainer data) {
@@ -35,8 +34,7 @@ public class SimpleTimeProcessor implements PredictionProcessor {
 		
 		Calendar cal = new GregorianCalendar(year, month-1, day);
 		int dayOfWeek = cal.get(Calendar.DAY_OF_WEEK);
-		log.debug("Trace was collected on a " +days[dayOfWeek]);
-		features.add(new PredictionFeature(type,days[dayOfWeek]));	
+		features.add(new PredictionFeature(type,"" + dayOfWeek));	
 		
 		return features;
 	}
@@ -50,7 +48,7 @@ public class SimpleTimeProcessor implements PredictionProcessor {
 	}
 
 	public String[] getResultRanges() {
-		return new String[]{"{Sunday,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday}"};
+		return new String[]{"numeric"};
 	}
 	
 
