@@ -171,7 +171,7 @@ public class MoaEvaluator implements Evaluator {
 			boolean minEvent = false;
 
 			double oldMaxDuration = levelsToMaxDuration.get(level);
-			maxEvent = (duration > 1.15 * oldMaxDuration) && (duration - oldMaxDuration > 60*3);
+			maxEvent = (duration > 1.15 * oldMaxDuration) && (duration - oldMaxDuration > 60*15);
 			if(maxEvent){
 				System.out.println("maxEvent in " + level);
 			}
