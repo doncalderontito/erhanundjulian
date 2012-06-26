@@ -205,11 +205,11 @@ public class MoaEvaluator implements Evaluator {
 		int argumentsHashValue = level * 100 + day * 10 + daySegment * 1;
 
 		if (!training) {
-			if (failureCandidate1 == argumentsHashValue) {
+			if (failureCandidate1 == level) {
 				return true;
 			}
-			if (failureCandidate0 == argumentsHashValue) {
-				failureCandidate1 = argumentsHashValue;
+			if (failureCandidate0 == level) {
+				failureCandidate1 = level;
 				return false;
 			}
 		}
@@ -220,11 +220,11 @@ public class MoaEvaluator implements Evaluator {
 			if (training) {
 				seenValues.add(argumentsHashValue);
 			} else {
-				failureCandidate0 = argumentsHashValue;
+				failureCandidate0 = level;
 				failureCandidate1 = -1;
 			}
 		}
-		return !found;
+		return false;
 
 	}
 
