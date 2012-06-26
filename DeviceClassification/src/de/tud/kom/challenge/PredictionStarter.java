@@ -24,7 +24,7 @@ import de.tud.kom.challenge.prediction.PredictionFeature;
 import de.tud.kom.challenge.prediction.PredictionPath;
 import de.tud.kom.challenge.prediction.PredictionReader;
 import de.tud.kom.challenge.prediction.evaluator.Evaluator;
-import de.tud.kom.challenge.prediction.evaluator.MoaEvaluator;
+import de.tud.kom.challenge.prediction.evaluator.TimedEnergyLevelEvaluator;
 import de.tud.kom.challenge.prediction.processors.PredictionProcessor;
 
 
@@ -48,7 +48,7 @@ public class PredictionStarter {
 		// TODO 2: Add your own evaluation function here
 		// evaluator = mySuperDuperEvaluationFunction();
 //		evaluator = new WekaEvaluator();
-		evaluator = new MoaEvaluator();
+		evaluator = new TimedEnergyLevelEvaluator();
 //		evaluator = new SimpleEvaluator();	
 		
 		log.info("Starting device predition with "+processors.size()+" processor"+(processors.size()==1?"":"s")+"...");
