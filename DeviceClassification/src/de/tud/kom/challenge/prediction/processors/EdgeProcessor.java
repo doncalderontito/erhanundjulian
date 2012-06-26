@@ -9,8 +9,8 @@ import de.tud.kom.challenge.prediction.PredictionFeature;
 public class EdgeProcessor implements PredictionProcessor {
 
 	private int oldValue = -1;
-	public static final float ERROR_MARGIN_PERCENT = 0.05f;
-	public static final float ERROR_MARGIN_ABSOLUTE = 2.1f;
+	public static final float ERROR_MARGIN_PERCENT = 0.2f;
+	public static final float ERROR_MARGIN_ABSOLUTE = 10.1f;
 	
 	private static int print = 0;
 	private static long count = 0;
