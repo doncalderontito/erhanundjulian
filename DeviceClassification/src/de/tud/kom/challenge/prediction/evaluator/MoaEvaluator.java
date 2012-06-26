@@ -26,6 +26,7 @@ public class MoaEvaluator implements Evaluator {
 	// filter
 	private final int filterSize = 1;
 	private Vector<Instance> instanceFilter = new Vector<Instance>();
+	boolean filterActive = true;
 
 	private int lastLevel = -1;
 	private double lastDuration;
@@ -121,6 +122,11 @@ public class MoaEvaluator implements Evaluator {
 	}
 
 	private boolean instanceFiltered(Instance instance) {
+		
+		if(filterActive == false){
+			return false;
+		}
+		
 		boolean found = false;
 		for (Instance filterInstance : instanceFilter) {
 			boolean equal = true;
@@ -220,9 +226,14 @@ public class MoaEvaluator implements Evaluator {
 			if (training) {
 				seenValues.add(argumentsHashValue);
 			} else {
+				System.out.println("failureCandidate : " + level);
 				failureCandidate0 = level;
 				failureCandidate1 = -1;
+				filterActive = false;
 			}
+		}
+		else{
+			filterActive = true;
 		}
 		return false;
 
