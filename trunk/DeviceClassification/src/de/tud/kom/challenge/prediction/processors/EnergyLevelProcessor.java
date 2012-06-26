@@ -18,6 +18,8 @@ public class EnergyLevelProcessor implements PredictionProcessor {
 	private double marginePercentage = 0.1;
 	private double margineAbsolut = 4;
 
+	private long lastInputTime = -1;
+	
 	private int lastLevel = -1;
 	private long lastLevelStartTime = -1;
 
@@ -33,6 +35,16 @@ public class EnergyLevelProcessor implements PredictionProcessor {
 	@Override
 	public Vector<PredictionFeature> addValueToModel(DataEntry input) {
 
+		long inputTime = input.getTime();
+		if(!(lastInputTime == -1)){
+			if((inputTime - lastInputTime) > 5*60){
+				lastLevel = -1;
+				lastLevelStartTime = -1;
+			}
+		}
+	
+		lastInputTime = input.getTime();
+		
 		int consumption = input.getValue();
 		int level = 0;
 		

@@ -16,10 +16,10 @@ import weka.core.converters.ArffLoader;
 
 import de.tud.kom.challenge.prediction.PredictionFeature;
 
-public class MoaEvaluator implements Evaluator {
+public class TimedEnergyLevelEvaluator implements Evaluator {
 
-	private final static Logger log = Logger.getLogger(MoaEvaluator.class
-			.getSimpleName());
+	private final static Logger log = Logger
+			.getLogger(TimedEnergyLevelEvaluator.class.getSimpleName());
 
 	private Instances dataset;
 
@@ -38,6 +38,7 @@ public class MoaEvaluator implements Evaluator {
 	private int failureCandidate1 = -1;
 
 	private String message = "";
+
 
 	@Override
 	public boolean evaluate(Vector<PredictionFeature> results, boolean training) {
@@ -98,7 +99,7 @@ public class MoaEvaluator implements Evaluator {
 	}
 
 	public String toString() {
-		return message;
+		return this.getClass().getSimpleName();
 	}
 
 	@Override
@@ -122,11 +123,11 @@ public class MoaEvaluator implements Evaluator {
 	}
 
 	private boolean instanceFiltered(Instance instance) {
-		
-		if(filterActive == false){
+
+		if (filterActive == false) {
 			return false;
 		}
-		
+
 		boolean found = false;
 		for (Instance filterInstance : instanceFilter) {
 			boolean equal = true;
@@ -231,8 +232,7 @@ public class MoaEvaluator implements Evaluator {
 				failureCandidate1 = -1;
 				filterActive = false;
 			}
-		}
-		else{
+		} else {
 			filterActive = true;
 		}
 		return false;
