@@ -20,16 +20,9 @@ public class EnergyLevelProcessor implements PredictionProcessor {
 
 	private int lastLevel = -1;
 	private long lastLevelStartTime = -1;
-	
-	private static final int PIPELINE_SIZE = 4;
-	private int[] pipeline = new int[PIPELINE_SIZE];
-	private int fillLevel = 0;
 
 	public EnergyLevelProcessor() {
-		for(int i = 0; i < PIPELINE_SIZE; i++)
-		{
-			pipeline[i] = -1;
-		}
+
 	}
 
 	@Override
@@ -40,34 +33,13 @@ public class EnergyLevelProcessor implements PredictionProcessor {
 	@Override
 	public Vector<PredictionFeature> addValueToModel(DataEntry input) {
 
+		int consumption = input.getValue();
 		int level = 0;
-
-		Vector<PredictionFeature> features = new Vector<PredictionFeature>();
-		
-		for(int i = PIPELINE_SIZE - 1; i > 0; i--)
-			pipeline[i] = pipeline[i - 1];
-		pipeline[0] = input.getValue();
-		
-		if(pipeline[PIPELINE_SIZE - 1] == -1) {
-			features.add(new PredictionFeature("EnergyLevel", "?"));
-			features.add(new PredictionFeature("LevelDuration", "?"));
-			return features;
-		}
-		
-		if(EdgeProcessor.isEdge(pipeline[0], pipeline[1]) && EdgeProcessor.isEdge(pipeline[2], pipeline[1])) {
-			pipeline[1] = pipeline[0];
-		}
-
-		if(EdgeProcessor.isEdge(pipeline[0], pipeline[1]) && EdgeProcessor.isEdge(pipeline[3], pipeline[2])) {
-			pipeline[1] = pipeline[0];
-			pipeline[2] = pipeline[0];
-		}
-
-		int consumption = pipeline[PIPELINE_SIZE - 1];
 		
 		if (lastLevelStartTime == -1)
 			lastLevelStartTime = input.getTime();
 
+		Vector<PredictionFeature> features = new Vector<PredictionFeature>();
 
 		if (consumption != 0) {
 			boolean settled = false;
@@ -88,8 +60,10 @@ public class EnergyLevelProcessor implements PredictionProcessor {
 			}
 
 			if (settled == false) {
+				
 				level = levelsUsed++;
 				levelRepresentatives[level] = consumption;
+				System.out.println("new energy level: " + level + " for value " + input.getValue() * (1-marginePercentage) + " - " + input.getValue() * (1+marginePercentage));
 			}
 		}
 
