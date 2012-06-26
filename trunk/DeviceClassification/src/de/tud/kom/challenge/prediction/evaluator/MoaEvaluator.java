@@ -71,10 +71,20 @@ public class MoaEvaluator implements Evaluator {
 
 	private boolean evaluate(Instance instance, boolean training) {
 
-		int level = (int) instance.value(0);
-		double duration = (double) instance.value(1);
-		int day = (int) instance.value(2);
-		int daySegment = (int) instance.value(3);
+		int level = 0;
+		double duration = 0;
+		int day = 0;
+		int daySegment = 0;
+		
+		try {
+			level = (int) instance.value(0);
+			duration = (double) instance.value(1);
+			day = (int) instance.value(2);
+			daySegment = (int) instance.value(3);
+		}
+		catch(Exception e) {
+			return false;
+		}
 
 		boolean event = false;
 

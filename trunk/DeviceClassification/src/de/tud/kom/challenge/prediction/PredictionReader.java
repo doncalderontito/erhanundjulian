@@ -76,7 +76,7 @@ public class PredictionReader {
 		LineData l = null;
 		while (lines.hasNext()) {
 			l = lines.next();
-			DataEntry de = new DataEntry(l.getDateTime().toLong(), l.getSmoothedConsumptionInWatt());
+			DataEntry de = new DataEntry(l.getDateTime().toLong(), l.getConsumptionInWatt());
 			data.addEntry(de);
 		}
 	}
