@@ -45,13 +45,12 @@ public class EnergyLevelProcessor implements PredictionProcessor {
 			boolean settled = false;
 			for (int i = 1; i < Math.min(levelsUsed, levelRange); i++) {
 				int levelRepresentative = levelRepresentatives[i];
-				boolean tooHigh = ((double) levelRepresentative)
+				boolean tooHigh = ((double) (levelRepresentative + margineAbsolut))
 						* (1 + marginePercentage) < (double) consumption;
-				boolean tooLow = ((double) levelRepresentative)
+				boolean tooLow = ((double) (levelRepresentative - margineAbsolut))
 						* (1 - marginePercentage) > (double) consumption;
 
-				if (!((tooHigh || tooLow) && Math.abs(levelRepresentative
-						- consumption) > margineAbsolut)) {
+				if (!(tooHigh || tooLow)) {
 					settled = true;
 					level = i;
 					break;
@@ -63,7 +62,7 @@ public class EnergyLevelProcessor implements PredictionProcessor {
 				
 				level = levelsUsed++;
 				levelRepresentatives[level] = consumption;
-				System.out.println("new energy level: " + level + " for value " + input.getValue() * (1-marginePercentage) + " - " + input.getValue() * (1+marginePercentage));
+				System.out.println("new energy level: " + level + " for value " + (input.getValue() - margineAbsolut) * (1-marginePercentage) + " - " + (input.getValue() + margineAbsolut) * (1+marginePercentage));
 			}
 		}
 
