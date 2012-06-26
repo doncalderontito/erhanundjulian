@@ -33,6 +33,8 @@ public class MoaEvaluator implements Evaluator {
 	private HashMap<Integer, Double> levelsToMaxDuration = new HashMap<Integer, Double>();
 
 	private HashSet<Integer> seenValues = new HashSet<Integer>();
+	private int failureCandidate0 = -1;
+	private int failureCandidate1 = -1;
 
 	private String message = "";
 
@@ -71,20 +73,10 @@ public class MoaEvaluator implements Evaluator {
 
 	private boolean evaluate(Instance instance, boolean training) {
 
-		int level = 0;
-		double duration = 0;
-		int day = 0;
-		int daySegment = 0;
-		
-		try {
-			level = (int) instance.value(0);
-			duration = (double) instance.value(1);
-			day = (int) instance.value(2);
-			daySegment = (int) instance.value(3);
-		}
-		catch(Exception e) {
-			return false;
-		}
+		int level = (int) instance.value(0);
+		double duration = (double) instance.value(1);
+		int day = (int) instance.value(2);
+		int daySegment = (int) instance.value(3);
 
 		boolean event = false;
 
@@ -97,7 +89,8 @@ public class MoaEvaluator implements Evaluator {
 		}
 
 		event = event
-				| this.evaluateEnergyLevelWithTime(level, day, daySegment);
+				| this.evaluateEnergyLevelWithTime(level, day, daySegment,
+						training);
 
 		return event;
 
@@ -181,15 +174,17 @@ public class MoaEvaluator implements Evaluator {
 			boolean minEvent = false;
 
 			double oldMaxDuration = levelsToMaxDuration.get(level);
-			maxEvent = (duration > 1.15 * oldMaxDuration) && (duration - oldMaxDuration > 60*15);
-			if(maxEvent){
+			maxEvent = (duration > 1.15 * oldMaxDuration)
+					&& (duration - oldMaxDuration > 60 * 15);
+			if (maxEvent) {
 				System.out.println("maxEvent in " + level);
 			}
 
 			if (level != lastLevel) {
 				double oldMinDuration = levelsToMinDuration.get(lastLevel);
-				minEvent = (oldMinDuration * 0.85 > lastDuration) && (oldMinDuration - lastDuration > 4);
-				if(minEvent){
+				minEvent = (oldMinDuration * 0.85 > lastDuration)
+						&& (oldMinDuration - lastDuration > 4);
+				if (minEvent) {
 					System.out.println("minEvent in " + lastLevel);
 				}
 			}
@@ -205,16 +200,29 @@ public class MoaEvaluator implements Evaluator {
 	}
 
 	private boolean evaluateEnergyLevelWithTime(int level, int day,
-			int daySegment) {
+			int daySegment, boolean training) {
 
 		int argumentsHashValue = level * 100 + day * 10 + daySegment * 1;
+
+		if (!training) {
+			if (failureCandidate1 == argumentsHashValue) {
+				return true;
+			}
+			if (failureCandidate0 == argumentsHashValue) {
+				failureCandidate1 = argumentsHashValue;
+				return false;
+			}
+		}
+
 		boolean found = seenValues.contains(argumentsHashValue);
-		
+
 		if (!found) {
-			seenValues.add(argumentsHashValue);
-			message = "energy lavel " + level
-					+ " has never occured at this day time";
-			System.out.println(message);
+			if (training) {
+				seenValues.add(argumentsHashValue);
+			} else {
+				failureCandidate0 = argumentsHashValue;
+				failureCandidate1 = -1;
+			}
 		}
 		return !found;
 
